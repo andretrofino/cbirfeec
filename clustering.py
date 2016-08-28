@@ -15,7 +15,17 @@ number_of_images_per_object = 72
 def reshape(flat, size):
     return [flat[i:i + size] for i in range(0, len(flat), size)]
 
-def load_pixels(dir_path, k_imgs=1.0, k_pixels=1.0, rsz=1.0):
+def load_pixels_from_image(img_path, k_pixels = 1.0, resize = 1.0):
+    img = cv2.imread(img_path)
+    img = cv2.resize(img, None, fx=resize, fy=resize)
+    w, h, channels = img.shape
+    total_pixels = w*h
+    img = img.reshape((total_pixels, channels))
+    n_pixels = int(total_pixels * k_pixels)
+    sampled_pixels = random.sample(img, n_pixels)
+    return sampled_pixels
+
+def load_pixels(dir_path, k_imgs=1.0, k_pixels=1.0, resize=1.0):
     image_filenames = []
     for (dirpath, dirnames, filenames) in os.walk(dir_path):
         image_filenames.extend(filenames)
@@ -33,13 +43,7 @@ def load_pixels(dir_path, k_imgs=1.0, k_pixels=1.0, rsz=1.0):
 
     pixels = []
     for img_name in sampled_imgs:
-        img = cv2.imread(os.path.join(dir_path, img_name))
-        img = cv2.resize(img, None, fx=rsz, fy=rsz)
-        w, h, channels = img.shape
-        total_pixels = w*h
-        img = img.reshape((total_pixels, channels))
-        n_pixels = int(total_pixels * k_pixels)
-        sampled_pixels = random.sample(img, n_pixels)
+        sampled_pixels = load_pixels_from_image(os.path.join(dir_path, img_name), k_pixels, resize)
         pixels.extend(sampled_pixels)
 
     return pixels
@@ -76,7 +80,7 @@ def main():
     else:
         print "Pickle not found"
         print "Loading pixels"
-        pixels = load_pixels("coil-100", 0.1, 0.5, 0.5)
+        pixels = load_pixels("c100-train", 0.2, 0.5, 0.5)
         print "Number of pixels: " + str(len(pixels))
         print "Clustering"
         centroids = cluster(pixels, n_clusters=NUM_OF_CLUSTERS)
