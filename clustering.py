@@ -23,6 +23,7 @@ def reshape(flat, size):
 
 def load_pixels_from_image(img_path, k_pixels=1.0, resize=1.0):
     img = cv2.imread(img_path)
+    # size = int(128 * resize)
     img = cv2.resize(img, None, fx=resize, fy=resize)
     w, h, channels = img.shape
     total_pixels = w*h
@@ -38,7 +39,7 @@ def load_image_paths_from_dir(dir_path):
         image_filenames.extend(filenames)
         break
 
-    image_filenames = [name for name in image_filenames if name.endswith("png")]  # Skip non-image files
+    image_filenames = [name for name in image_filenames if name.endswith("png") or name.endswith("jpg")]  # Skip non-image files
     image_filenames = map(lambda img_name: os.path.join(dir_path, img_name), image_filenames)
     image_filenames = reshape(image_filenames, NUM_IMG_PER_OBJECT)
     return image_filenames
@@ -168,7 +169,7 @@ def main():
     centroids = generate_centroids()
     codebook = generate_codebook(centroids)
 
-    print match('c100-test/obj23__195.png', centroids, codebook)
+    print match('c100-test/obj100__95.png', centroids, codebook)
 
 
 if __name__ == "__main__":
