@@ -10,10 +10,16 @@ from sklearn.preprocessing import scale
 from sklearn.neighbors.nearest_centroid import NearestCentroid
 from scipy.spatial import distance
 
-number_of_images_per_object_train = 36
+# Global variables
+CENTROIDS_PICKLE = 'centroids.pickle'
+CODEBOOK_PICKLE = 'codebook.pickle'
+NUM_OF_CLUSTERS = 40
+NUM_IMG_PER_OBJECT = 72
+
 
 def reshape(flat, size):
     return [flat[i:i + size] for i in range(0, len(flat), size)]
+
 
 def load_pixels_from_image(img_path, k_pixels = 1.0, resize = 1.0):
     img = cv2.imread(img_path)
@@ -25,6 +31,7 @@ def load_pixels_from_image(img_path, k_pixels = 1.0, resize = 1.0):
     sampled_pixels = random.sample(img, n_pixels)
     return sampled_pixels
 
+
 def load_image_paths_from_dir(dir_path):
     image_filenames = []
     for (dirpath, dirnames, filenames) in os.walk(dir_path):
@@ -33,13 +40,14 @@ def load_image_paths_from_dir(dir_path):
 
     image_filenames = [name for name in image_filenames if name.endswith("png")]  # Skip non-image files
     image_filenames = map(lambda img_name: os.path.join(dir_path, img_name), image_filenames)
-    image_filenames = reshape(image_filenames, number_of_images_per_object_train)
+    image_filenames = reshape(image_filenames, NUM_IMG_PER_OBJECT)
     return image_filenames
+
 
 def load_pixels(dir_path, k_imgs=1.0, k_pixels=1.0, resize=1.0):
     image_filenames = load_image_paths_from_dir(dir_path)
 
-    n_imgs = int(number_of_images_per_object_train * k_imgs)
+    n_imgs = int(NUM_IMG_PER_OBJECT * k_imgs)
 
     sampled_imgs = []
     for obj in image_filenames:
@@ -53,12 +61,14 @@ def load_pixels(dir_path, k_imgs=1.0, k_pixels=1.0, resize=1.0):
 
     return pixels
 
+
 def cluster(data, n_clusters=100):
     kmeans = KMeans(init='k-means++', n_clusters=n_clusters, n_init=1)
     kmeans.fit(data)
     centroids = kmeans.cluster_centers_
 
     return centroids
+
 
 def find_closest_centroid(pixel, centroids):
     min_dist = sys.float_info.max
@@ -70,18 +80,14 @@ def find_closest_centroid(pixel, centroids):
 
     return closest_centroid
 
-# Global variables
-CENTROIDS_PICKLE = 'centroids.pickle'
-CODEBOOK_PICKLE = 'codebook.pickle'
-NUM_OF_CLUSTERS = 40
 
 def main():
-# PART 1
+    # PART 1
     print "Checking if pickle exists..."
     if os.path.isfile(CENTROIDS_PICKLE):
         print "Pickle found"
         with open(CENTROIDS_PICKLE, 'rb') as handle:
-              centroids = pickle.load(handle)
+            centroids = pickle.load(handle)
 
     else:
         print "Pickle not found"
@@ -97,12 +103,12 @@ def main():
     for centroid in centroids:
         print centroid
 
-# PART 2
+    # PART 2
     print "Checking if codebook pickle exists..."
     if os.path.isfile(CODEBOOK_PICKLE):
         print "Codebook pickle found"
         with open(CODEBOOK_PICKLE, 'rb') as handle:
-              codebook = pickle.load(handle)
+            codebook = pickle.load(handle)
 
         print codebook
     else:
@@ -111,7 +117,7 @@ def main():
 
         codebook = {}
         for img_path in image_filenames:
-            image_pixels = load_pixels_from_image(img_path, resize = 0.25)
+            image_pixels = load_pixels_from_image(img_path, resize=0.25)
 
             pixels_centroids = np.zeros(NUM_OF_CLUSTERS)
             for pixel in image_pixels:
@@ -122,7 +128,7 @@ def main():
             print pixels_centroids
 
         with open(CODEBOOK_PICKLE, 'wb') as handle:
-              pickle.dump(codebook, handle)
+            pickle.dump(codebook, handle)
 
 
 if __name__ == "__main__":
