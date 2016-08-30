@@ -5,9 +5,7 @@ import pickle
 import numpy as np
 import sys
 from sklearn.cluster import KMeans
-from sklearn.neighbors.nearest_centroid import NearestCentroid
 from scipy.spatial import distance
-import numpy as np
 
 # Global variables
 CENTROIDS_PICKLE = 'centroids.pickle'
@@ -45,7 +43,7 @@ def load_image_paths_from_dir(dir_path):
     return image_filenames
 
 
-def load_pixels(dir_path, k_imgs=1.0, k_pixels=1.0, resize=1.0):
+def load_pixels_from_dir(dir_path, k_imgs=1.0, k_pixels=1.0, resize=1.0):
     image_filenames = load_image_paths_from_dir(dir_path)
 
     n_imgs = int(NUM_IMG_PER_OBJECT * k_imgs)
@@ -94,16 +92,13 @@ def generate_centroids():
     else:
         print "Pickle not found"
         print "Loading pixels"
-        pixels = load_pixels(TRAIN_IMG_PATH, 0.2, 0.5, 0.5)
+        pixels = load_pixels_from_dir(TRAIN_IMG_PATH, 0.2, 0.5, 0.5)
         print "Number of pixels: " + str(len(pixels))
         print "Clustering"
         centroids = cluster(pixels, n_clusters=NUM_OF_CLUSTERS)
 
         with open(CENTROIDS_PICKLE, 'wb') as handle:
             pickle.dump(centroids, handle)
-
-    # for centroid in centroids:
-    #     print centroid
 
     return centroids
 
@@ -116,7 +111,6 @@ def generate_codebook(centroids):
         with open(CODEBOOK_PICKLE, 'rb') as handle:
             codebook = pickle.load(handle)
 
-        # print codebook
     else:
         print "Codebook not found, calculating codebooks"
         image_filenames = load_image_paths_from_dir(TRAIN_IMG_PATH)
@@ -133,7 +127,6 @@ def generate_codebook(centroids):
                 pixels_centroids[centroid_index] += 1
 
             codebook[img_path] = pixels_centroids
-            # print pixels_centroids
 
         with open(CODEBOOK_PICKLE, 'wb') as handle:
             pickle.dump(codebook, handle)

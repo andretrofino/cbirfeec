@@ -2,7 +2,7 @@ from clustering import *
 
 
 def main():
-    test_path = 'tests'
+    test_path = 'c100-test'
     centroids = generate_centroids()
     codebook = generate_codebook(centroids)
 
@@ -11,7 +11,7 @@ def main():
     sampled_imgs = []
 
     for obj in image_filenames:
-        sampled = random.sample(obj, 2)
+        sampled = random.sample(obj, 1)
         sampled_imgs.extend(sampled)
 
     for img in sampled_imgs:
